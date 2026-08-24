@@ -1,607 +1,423 @@
-// ======================================
-// DADOS DOS PROJETOS
-// ======================================
+// ================================
+// STOCKTECH - CONTROLE DE ESTOQUE
+// ================================
 
-let projetos = [
 
-    {
-        nome: "EcoSchool",
+// Busca os produtos salvos
 
-        turma: "3DS",
+let produtos = JSON.parse(
+    localStorage.getItem("produtos")
+) || [];
 
-        categoria: "Sustentabilidade",
 
-        integrantes: "Ana, João e Pedro",
+// ================================
+// SALVAR PRODUTOS
+// ================================
 
-        descricao:
-            "Sistema para incentivar práticas sustentáveis dentro da escola.",
+function salvarProdutos() {
 
-        icone: "🌱"
-    },
+    localStorage.setItem(
+        "produtos",
+        JSON.stringify(produtos)
+    );
 
+}
 
-    {
-        nome: "SmartClass",
 
-        turma: "3DS",
+// ================================
+// CADASTRAR PRODUTO
+// ================================
 
-        categoria: "Educação",
+const formProduto = document.getElementById("formProduto");
 
-        integrantes: "Maria, Lucas e Gabriel",
 
-        descricao:
-            "Plataforma para organizar atividades e conteúdos escolares.",
+if (formProduto) {
 
-        icone: "📚"
-    },
+    formProduto.addEventListener("submit", function(event) {
 
+        event.preventDefault();
 
-    {
-        nome: "GameLab",
 
-        turma: "2DS",
+        const nome = document.getElementById("nome").value;
 
-        categoria: "Jogos",
+        const categoria = document.getElementById("categoria").value;
 
-        integrantes: "Carlos e Rafael",
+        const quantidade = Number(
+            document.getElementById("quantidade").value
+        );
 
-        descricao:
-            "Projeto de criação de jogos educativos para estudantes.",
+        const preco = Number(
+            document.getElementById("preco").value
+        );
 
-        icone: "🎮"
-    },
 
+        const produto = {
 
-    {
-        nome: "TechHelp",
+            id: Date.now(),
 
-        turma: "3DS",
+            nome: nome,
 
-        categoria: "Tecnologia",
+            categoria: categoria,
 
-        integrantes: "Pedro, Bruno e Lucas",
+            quantidade: quantidade,
 
-        descricao:
-            "Sistema para auxiliar alunos com problemas de informática.",
+            preco: preco
 
-        icone: "💻"
-    }
+        };
 
-];
 
+        produtos.push(produto);
 
-// ======================================
-// EXIBIR PROJETOS
-// ======================================
+        salvarProdutos();
 
-function carregarProjetos() {
 
-    const lista =
-        document.getElementById("listaProjetos");
+        alert("Produto cadastrado com sucesso!");
 
 
-    if (!lista) {
-        return;
-    }
-
-
-    lista.innerHTML = "";
-
-
-    projetos.forEach(function(projeto, index) {
-
-        lista.innerHTML += `
-
-            <div class="col-md-6 col-lg-4">
-
-                <div class="card project-card">
-
-                    <div class="project-icon text-center">
-
-                        ${projeto.icone}
-
-                    </div>
-
-
-                    <div class="card-body">
-
-                        <span class="badge bg-primary mb-2">
-
-                            ${projeto.categoria}
-
-                        </span>
-
-
-                        <h4>
-                            ${projeto.nome}
-                        </h4>
-
-
-                        <p>
-                            ${projeto.descricao}
-                        </p>
-
-
-                        <p>
-                            <strong>Turma:</strong>
-                            ${projeto.turma}
-                        </p>
-
-
-                        <p>
-                            <strong>Integrantes:</strong>
-                            ${projeto.integrantes}
-                        </p>
-
-
-                        <button
-                            class="btn btn-primary"
-                            onclick="verProjeto(${index})">
-
-                            Ver detalhes
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        `;
+        window.location.href = "produtos.html";
 
     });
 
 }
 
 
-// ======================================
-// PESQUISAR PROJETOS
-// ======================================
+// ================================
+// LISTAR PRODUTOS
+// ================================
 
-function pesquisarProjetos() {
+function listarProdutos(lista = produtos) {
 
-    const campo =
-        document.getElementById("campoPesquisa");
-
-
-    const texto =
-        campo.value.toLowerCase();
+    const tabela =
+        document.getElementById("listaProdutos");
 
 
-    const cards =
-        document.querySelectorAll(".project-card");
+    if (!tabela) return;
 
 
-    cards.forEach(function(card) {
-
-        const conteudo =
-            card.innerText.toLowerCase();
+    tabela.innerHTML = "";
 
 
-        if (conteudo.includes(texto)) {
+    if (lista.length === 0) {
 
-            card.parentElement.style.display =
-                "block";
+        tabela.innerHTML = `
+
+            <tr>
+
+                <td colspan="6"
+                    class="text-center text-muted">
+
+                    Nenhum produto cadastrado.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    lista.forEach(function(produto) {
+
+
+        let status = "";
+
+
+        if (produto.quantidade <= 5) {
+
+            status =
+                `<span class="badge bg-danger">
+                    Estoque baixo
+                </span>`;
 
         } else {
 
-            card.parentElement.style.display =
-                "none";
+            status =
+                `<span class="badge bg-success">
+                    Normal
+                </span>`;
 
         }
+
+
+        tabela.innerHTML += `
+
+            <tr>
+
+                <td>
+
+                    ${produto.nome}
+
+                </td>
+
+
+                <td>
+
+                    ${produto.categoria}
+
+                </td>
+
+
+                <td>
+
+                    ${produto.quantidade}
+
+                </td>
+
+
+                <td>
+
+                    R$ ${produto.preco.toFixed(2)}
+
+                </td>
+
+
+                <td>
+
+                    ${status}
+
+                </td>
+
+
+                <td>
+
+                    <button
+                        class="btn btn-danger btn-sm"
+                        onclick="excluirProduto(${produto.id})">
+
+                        Excluir
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `;
 
     });
 
 }
 
 
-// ======================================
-// VER PROJETO
-// ======================================
+// ================================
+// EXCLUIR PRODUTO
+// ================================
 
-function verProjeto(index) {
+function excluirProduto(id) {
 
-    const projeto =
-        projetos[index];
+    const confirmar =
+        confirm("Deseja realmente excluir este produto?");
 
 
-    alert(
+    if (!confirmar) {
 
-        "Projeto: " + projeto.nome +
+        return;
 
-        "\n\nCategoria: " +
-        projeto.categoria +
+    }
 
-        "\n\nTurma: " +
-        projeto.turma +
 
-        "\n\nIntegrantes: " +
-        projeto.integrantes +
+    produtos =
+        produtos.filter(function(produto) {
 
-        "\n\nDescrição:\n" +
-        projeto.descricao
+            return produto.id !== id;
 
-    );
+        });
+
+
+    salvarProdutos();
+
+
+    listarProdutos();
+
+
+    atualizarDashboard();
 
 }
 
 
-// ======================================
-// EVENTOS
-// ======================================
+// ================================
+// PESQUISAR PRODUTO
+// ================================
 
-const eventos = [
-
-    {
-        nome: "Feira de Tecnologia",
-
-        data: "25/09/2026",
-
-        horario: "09:00",
-
-        local: "Auditório",
-
-        icone: "💻"
-    },
+const campoBusca =
+    document.getElementById("campoBusca");
 
 
-    {
-        nome: "Semana de Projetos",
+if (campoBusca) {
 
-        data: "30/09/2026",
-
-        horario: "08:00",
-
-        local: "Quadra da escola",
-
-        icone: "🚀"
-    },
+    campoBusca.addEventListener("input", function() {
 
 
-    {
-        nome: "Mostra Cultural",
-
-        data: "10/10/2026",
-
-        horario: "14:00",
-
-        local: "Pátio",
-
-        icone: "🎨"
-    }
-
-];
+        const texto =
+            campoBusca.value.toLowerCase();
 
 
-function carregarEventos() {
+        const produtosFiltrados =
+            produtos.filter(function(produto) {
+
+
+                return produto.nome
+                    .toLowerCase()
+                    .includes(texto);
+
+            });
+
+
+        listarProdutos(produtosFiltrados);
+
+    });
+
+}
+
+
+// ================================
+// DASHBOARD
+// ================================
+
+function atualizarDashboard() {
+
+
+    const totalProdutos =
+        document.getElementById("totalProdutos");
+
+
+    if (!totalProdutos) return;
+
+
+    const quantidadeEstoque =
+        document.getElementById("quantidadeEstoque");
+
+
+    const estoqueBaixo =
+        document.getElementById("estoqueBaixo");
+
+
+    const valorTotal =
+        document.getElementById("valorTotal");
+
+
+    // Total de produtos cadastrados
+
+    totalProdutos.textContent =
+        produtos.length;
+
+
+    // Quantidade total
+
+    const quantidadeTotal =
+        produtos.reduce(function(total, produto) {
+
+            return total + produto.quantidade;
+
+        }, 0);
+
+
+    quantidadeEstoque.textContent =
+        quantidadeTotal;
+
+
+    // Produtos com estoque baixo
+
+    const produtosBaixo =
+        produtos.filter(function(produto) {
+
+            return produto.quantidade <= 5;
+
+        });
+
+
+    estoqueBaixo.textContent =
+        produtosBaixo.length;
+
+
+    // Valor total
+
+    const valor =
+        produtos.reduce(function(total, produto) {
+
+            return total +
+                produto.quantidade *
+                produto.preco;
+
+        }, 0);
+
+
+    valorTotal.textContent =
+        valor.toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+
+    // Lista de estoque baixo
 
     const lista =
-        document.getElementById("listaEventos");
+        document.getElementById("listaEstoqueBaixo");
 
 
-    if (!lista) {
-        return;
-    }
+    if (lista) {
 
 
-    eventos.forEach(function(evento) {
+        if (produtosBaixo.length === 0) {
 
-        lista.innerHTML += `
+            lista.innerHTML = `
 
-            <div class="col-md-6 col-lg-4">
+                <p class="text-success">
 
-                <div class="card event-card h-100">
+                    ✅ Nenhum produto com estoque baixo.
 
-                    <div class="card-body">
+                </p>
 
-                        <div class="fs-1 mb-3">
-                            ${evento.icone}
-                        </div>
+            `;
 
-                        <h4>
-                            ${evento.nome}
-                        </h4>
+        } else {
 
-                        <p>
-                            📅 ${evento.data}
-                        </p>
 
-                        <p>
-                            🕐 ${evento.horario}
-                        </p>
+            lista.innerHTML = "";
 
-                        <p>
-                            📍 ${evento.local}
-                        </p>
 
-                        <button
-                            class="btn btn-primary"
-                            onclick="participarEvento('${evento.nome}')">
+            produtosBaixo.forEach(function(produto) {
 
-                            Participar
 
-                        </button>
+                lista.innerHTML += `
+
+                    <div class="alert alert-warning">
+
+                        ⚠️ <strong>
+                            ${produto.nome}
+                        </strong>
+
+                        possui apenas
+
+                        <strong>
+                            ${produto.quantidade}
+                        </strong>
+
+                        unidades em estoque.
 
                     </div>
 
-                </div>
+                `;
 
-            </div>
-
-        `;
-
-    });
-
-}
-
-
-// ======================================
-// PARTICIPAR DO EVENTO
-// ======================================
-
-function participarEvento(nome) {
-
-    alert(
-        "Inscrição realizada no evento:\n\n" +
-        nome
-    );
-
-}
-
-
-// ======================================
-// AVISOS
-// ======================================
-
-const avisos = [
-
-    {
-        titulo: "Feira de Tecnologia",
-
-        descricao:
-            "A Feira de Tecnologia acontecerá no dia 25/09."
-    },
-
-
-    {
-        titulo: "Entrega dos projetos",
-
-        descricao:
-            "A entrega dos projetos deverá ser realizada até 30/09."
-    },
-
-
-    {
-        titulo: "Semana de Projetos",
-
-        descricao:
-            "Prepare seu projeto para a apresentação."
-    }
-
-];
-
-
-function carregarAvisos() {
-
-    const lista =
-        document.getElementById("listaAvisos");
-
-
-    if (!lista) {
-        return;
-    }
-
-
-    avisos.forEach(function(aviso) {
-
-        lista.innerHTML += `
-
-            <div class="alert alert-primary">
-
-                <strong>
-                    📢 ${aviso.titulo}
-                </strong>
-
-                <br>
-
-                ${aviso.descricao}
-
-            </div>
-
-        `;
-
-    });
-
-}
-
-
-// ======================================
-// CADASTRO DE PROJETO
-// ======================================
-
-const formulario =
-    document.getElementById("formProjeto");
-
-
-if (formulario) {
-
-    formulario.addEventListener(
-        "submit",
-        function(event) {
-
-            event.preventDefault();
-
-
-            const nome =
-                document.getElementById(
-                    "nomeProjeto"
-                ).value;
-
-
-            const integrantes =
-                document.getElementById(
-                    "integrantes"
-                ).value;
-
-
-            const turma =
-                document.getElementById(
-                    "turma"
-                ).value;
-
-
-            const categoria =
-                document.getElementById(
-                    "categoria"
-                ).value;
-
-
-            const descricao =
-                document.getElementById(
-                    "descricao"
-                ).value;
-
-
-            const novoProjeto = {
-
-                nome: nome,
-
-                integrantes: integrantes,
-
-                turma: turma,
-
-                categoria: categoria,
-
-                descricao: descricao,
-
-                icone: "🚀"
-
-            };
-
-
-            projetos.push(novoProjeto);
-
-
-            localStorage.setItem(
-                "projetos",
-                JSON.stringify(projetos)
-            );
-
-
-            alert(
-                "Projeto cadastrado com sucesso!"
-            );
-
-
-            formulario.reset();
+            });
 
         }
-    );
-
-}
-
-
-// ======================================
-// CARREGAR PROJETOS DO LOCALSTORAGE
-// ======================================
-
-function carregarDadosSalvos() {
-
-    const dados =
-        localStorage.getItem("projetos");
-
-
-    if (dados) {
-
-        projetos =
-            JSON.parse(dados);
 
     }
 
 }
 
 
-// ======================================
-// MODO ESCURO
-// ======================================
+// ================================
+// INICIAR SISTEMA
+// ================================
 
-function alternarTema() {
+listarProdutos();
 
-    document.body.classList.toggle(
-        "dark-mode"
-    );
-
-
-    const modoEscuro =
-        document.body.classList.contains(
-            "dark-mode"
-        );
-
-
-    localStorage.setItem(
-        "tema",
-        modoEscuro
-    );
-
-}
-
-
-// ======================================
-// CARREGAR TEMA
-// ======================================
-
-function carregarTema() {
-
-    const tema =
-        localStorage.getItem("tema");
-
-
-    if (tema === "true") {
-
-        document.body.classList.add(
-            "dark-mode"
-        );
-
-    }
-
-}
-
-
-// ======================================
-// EDITAR PERFIL
-// ======================================
-
-function editarPerfil() {
-
-    const nome =
-        prompt(
-            "Digite seu nome:"
-        );
-
-
-    if (nome) {
-
-        alert(
-            "Perfil atualizado para: " +
-            nome
-        );
-
-    }
-
-}
-
-
-// ======================================
-// INICIALIZAÇÃO
-// ======================================
-
-carregarDadosSalvos();
-
-carregarTema();
-
-carregarProjetos();
-
-carregarEventos();
-
-carregarAvisos();
+atualizarDashboard();
